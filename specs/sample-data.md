@@ -1,0 +1,74 @@
+# Sample data
+
+Shared fixture for UI mockups and automated tests. Items use the same shape as the DynamoDB data model, so they are grouped below by the table they belong to.
+
+**Machine-readable copy:** [`sample-data.json`](sample-data.json) (same data; use this for seeding and automated tests, do not parse this markdown).
+
+All `createdAt` values are distinct, and the events are listed newest first.
+
+This set covers: an event where nothing has been taken yet, an event with one partly filled role and one completely full role, and the smallest event the rules allow (one role with one shift). The maximums of 10 roles and 50 shifts are not written out here, since that would be 500 shift items; tests that need them should generate them.
+
+---
+
+## Events
+
+```json
+[
+  {
+    "eventId": "m3n8kp2w",
+    "createdAt": "2026-09-20T10:00:00.000Z",
+    "name": "Food Drive Sorting",
+    "description": "Sort and box donations at the campus food pantry.",
+    "date": "2026-10-10"
+  },
+  {
+    "eventId": "k7m2xq9p",
+    "createdAt": "2026-09-18T14:05:00.000Z",
+    "name": "Heritage Day",
+    "description": "Heritage Day is a celebration of Moravian tradition, community, and service.",
+    "date": "2026-09-24"
+  },
+  {
+    "eventId": "n4w8rt3c",
+    "createdAt": "2026-09-12T09:30:00.000Z",
+    "name": "Blood Drive",
+    "description": "Staff the check-in table for the fall blood drive.",
+    "date": "2026-10-02"
+  }
+]
+```
+
+## Roles
+
+```json
+[
+  { "eventId": "m3n8kp2w", "roleId": "01", "label": "Sorting", "shiftCount": 2, "remainingShifts": 2 },
+  { "eventId": "m3n8kp2w", "roleId": "02", "label": "Loading", "shiftCount": 2, "remainingShifts": 2 },
+  { "eventId": "k7m2xq9p", "roleId": "01", "label": "Trash pickup", "shiftCount": 4, "remainingShifts": 2 },
+  { "eventId": "k7m2xq9p", "roleId": "02", "label": "Greeter", "shiftCount": 2, "remainingShifts": 0 },
+  { "eventId": "n4w8rt3c", "roleId": "01", "label": "Check-in table", "shiftCount": 1, "remainingShifts": 1 }
+]
+```
+
+## Shifts
+
+A shift with no `volunteerName` is open. Every `remainingShifts` above matches the number of open shifts here.
+
+```json
+[
+  { "roleKey": "m3n8kp2w#01", "shiftNumber": 1, "startTime": "09:00", "endTime": "11:00" },
+  { "roleKey": "m3n8kp2w#01", "shiftNumber": 2, "startTime": "11:00", "endTime": "13:00" },
+  { "roleKey": "m3n8kp2w#02", "shiftNumber": 1, "startTime": "13:00", "endTime": "14:30" },
+  { "roleKey": "m3n8kp2w#02", "shiftNumber": 2, "startTime": "14:30", "endTime": "16:00" },
+
+  { "roleKey": "k7m2xq9p#01", "shiftNumber": 1, "startTime": "08:00", "endTime": "10:00", "volunteerName": "Jack", "signedUpAt": "2026-09-19T16:20:00.000Z" },
+  { "roleKey": "k7m2xq9p#01", "shiftNumber": 2, "startTime": "10:00", "endTime": "12:00" },
+  { "roleKey": "k7m2xq9p#01", "shiftNumber": 3, "startTime": "12:00", "endTime": "14:00", "volunteerName": "Riley", "signedUpAt": "2026-09-19T17:05:00.000Z" },
+  { "roleKey": "k7m2xq9p#01", "shiftNumber": 4, "startTime": "14:00", "endTime": "16:00" },
+
+  { "roleKey": "k7m2xq9p#02", "shiftNumber": 1, "startTime": "09:00", "endTime": "12:00", "volunteerName": "Rana", "signedUpAt": "2026-09-19T18:40:00.000Z" },
+  { "roleKey": "k7m2xq9p#02", "shiftNumber": 2, "startTime": "12:00", "endTime": "15:00", "volunteerName": "Jack", "signedUpAt": "2026-09-20T08:15:00.000Z" },
+
+  { "roleKey": "n4w8rt3c#01", "shiftNumber": 1, "startTime": "10:00", "endTime": "14:00" }
+]
+```
