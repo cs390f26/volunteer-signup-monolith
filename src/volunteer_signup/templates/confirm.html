@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Confirm enlistment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Source+Sans+3:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="site-header">
+        <a class="brand" href="/">
+          Volunteers
+          <span class="brand-tag">Find a role. Pick a time. Show up.</span>
+        </a>
+        <div class="header-actions">
+          <a class="btn btn-primary" href="/">All events</a>
+          <a class="btn btn-primary" href="/create">Create event</a>
+        </div>
+      </header>
+
+      <div class="create-form">
+        <div class="create-box">
+          <p class="confirm-prompt">Confirm your enlistment</p>
+          <p class="page-status" id="form-error" hidden></p>
+
+          <div class="field">
+            <label for="volunteer-name">Your name</label>
+            <input
+              id="volunteer-name"
+              name="name"
+              type="text"
+              value=""
+              autocomplete="off"
+            />
+          </div>
+        </div>
+
+        <div class="create-actions">
+          <button class="btn btn-primary" type="button" id="submit-btn">
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const eventId = params.get("eventId");
+      const roleNumber = params.get("roleNumber");
+      const shiftNumber = params.get("shiftNumber");
+      const formError = document.getElementById("form-error");
+      const submitBtn = document.getElementById("submit-btn");
+
+      function showError(message) {
+        formError.hidden = false;
+        formError.textContent = message;
+      }
+
+      function clearError() {
+        formError.hidden = true;
+        formError.textContent = "";
+      }
+
+      if (!eventId || !roleNumber || !shiftNumber) {
+        showError("Missing shift.");
+        submitBtn.disabled = true;
+      }
+
+      submitBtn.addEventListener("click", async () => {
+        clearError();
+        const name = document.getElementById("volunteer-name").value.trim();
+        if (!name) {
+          showError("Enter your name.");
+          return;
+        }
+        if (name.length > 100) {
+          showError("Name must be at most 100 characters.");
+          return;
+        }
+
+        const response = await fetch(
+          "/events/" +
+            encodeURIComponent(eventId) +
+            "/roles/" +
+            encodeURIComponent(roleNumber) +
+            "/shifts/" +
+            encodeURIComponent(shiftNumber) +
+            "/signup",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name }),
+          }
+        );
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          showError(
+            (data.error && data.error.message) || "Could not complete signup."
+          );
+          return;
+        }
+        window.location.href =
+          "/role?eventId=" +
+          encodeURIComponent(eventId) +
+          "&roleNumber=" +
+          encodeURIComponent(roleNumber);
+      });
+    </script>
+  </body>
+</html>

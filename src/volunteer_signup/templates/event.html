@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Events</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Source+Sans+3:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="site-header">
+        <div class="brand">
+          Volunteers
+          <span class="brand-tag">Find a role. Pick a time. Show up.</span>
+        </div>
+        <div class="header-actions">
+          <a class="btn btn-primary" href="/create">Create event</a>
+        </div>
+      </header>
+
+      <p class="page-status" id="list-status" hidden></p>
+      <ul class="event-list" id="event-list"></ul>
+    </div>
+    <script>
+      const list = document.getElementById("event-list");
+      const status = document.getElementById("list-status");
+
+      function formatDate(isoDate) {
+        const parts = isoDate.split("-").map(Number);
+        if (parts.length !== 3 || parts.some((part) => Number.isNaN(part))) {
+          return isoDate;
+        }
+        const date = new Date(parts[0], parts[1] - 1, parts[2]);
+        return date.toLocaleDateString(undefined, {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+        });
+      }
+
+      function roleCount(role) {
+        if (typeof role.totalShifts === "number") {
+          const taken = role.totalShifts - role.openShifts;
+          return taken + " taken · " + role.openShifts + " left";
+        }
+        return role.openShifts === 1 ? "1 left" : role.openShifts + " left";
+      }
+
+      async function loadEvents() {
+        status.hidden = true;
+        const response = await fetch("/events");
+        if (!response.ok) {
+          status.hidden = false;
+          status.textContent = "Could not load events.";
+          list.replaceChildren();
+          return;
+        }
+        const data = await response.json();
+        list.replaceChildren();
+        for (const event of data.events) {
+          const li = document.createElement("li");
+          const article = document.createElement("article");
+          article.className = "panel detail-panel";
+
+          const header = document.createElement("header");
+          header.className = "detail-header";
+
+          const title = document.createElement("h1");
+          title.className = "detail-title";
+          title.textContent = event.name;
+
+          const date = document.createElement("p");
+          date.className = "event-date";
+          date.textContent = formatDate(event.date);
+
+          const copy = document.createElement("p");
+          copy.className = "detail-copy";
+          copy.textContent = event.description;
+
+          header.append(title, date, copy);
+
+          const label = document.createElement("h2");
+          label.className = "section-label";
+          label.textContent = "Roles";
+
+          const roles = document.createElement("ul");
+          roles.className = "choice-list";
+          for (const role of event.roles) {
+            const roleItem = document.createElement("li");
+            const link = document.createElement("a");
+            link.className = "choice choice-role";
+            link.href =
+              "/role?eventId=" +
+              encodeURIComponent(event.id) +
+              "&roleNumber=" +
+              encodeURIComponent(role.number);
+            const name = document.createElement("span");
+            name.className = "choice-name";
+            name.textContent = role.label;
+            const count = document.createElement("span");
+            count.className = "choice-count";
+            count.textContent = roleCount(role);
+            link.append(name, count);
+            roleItem.appendChild(link);
+            roles.appendChild(roleItem);
+          }
+
+          article.append(header, label, roles);
+          li.appendChild(article);
+          list.appendChild(li);
+        }
+      }
+
+      loadEvents();
+    </script>
+  </body>
+</html>
