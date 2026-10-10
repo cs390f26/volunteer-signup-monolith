@@ -6,3 +6,6 @@ class ValidationError(Exception):
 
 class NotFoundError(Exception):
     """Raised when a requested event, role, or shift does not exist."""
+
+class ConflictError(Exception):
+    """Raised when the requested action conflicts with existing data."""
