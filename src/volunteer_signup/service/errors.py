@@ -3,3 +3,6 @@ class ServiceUnavailableError(Exception):
 
 class ValidationError(Exception):
     """Raised when submitted application data is invalid."""
+
+class NotFoundError(Exception):
+    """Raised when a requested event, role, or shift does not exist."""
