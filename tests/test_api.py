@@ -30,3 +30,38 @@ def test_health_returns_unavailable_when_database_is_unreachable(db):
 
     assert response.status_code == 503
     assert response.get_json() == {"status": "unavailable"}
+
+
+def test_unknown_route_returns_json_not_found():
+    app = create_app()
+    client = app.test_client()
+
+    response = client.get("/does-not-exist")
+
+    assert response.status_code == 404
+    assert response.get_json() == {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Requested resource not found",
+        }
+    }
+
+
+class UnexpectedFailureService:
+    def list_events(self):
+        raise RuntimeError("unexpected failure")
+
+
+def test_unexpected_error_returns_json_internal_error():
+    app = create_app(service=UnexpectedFailureService())
+    client = app.test_client()
+
+    response = client.get("/events")
+
+    assert response.status_code == 500
+    assert response.get_json() == {
+        "error": {
+            "code": "INTERNAL_ERROR",
+            "message": "Unable to complete the request",
+        }
+    }

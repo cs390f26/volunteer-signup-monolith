@@ -1,1 +1,5 @@
-"""Application rules: validation, id generation, and mapping between the API and db layers."""
+"""Application rules and mapping between API and database layers."""
+
+from volunteer_signup.service.service import VolunteerSignupService
+
+__all__ = ["VolunteerSignupService"]
