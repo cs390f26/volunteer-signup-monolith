@@ -1,7 +1,7 @@
 import re
 import secrets
 import string
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 from volunteer_signup.db.errors import (
     DatabaseError,
@@ -28,7 +28,7 @@ def _generate_event_id():
 
 def _utc_now():
     return (
-        datetime.now(timezone.utc)
+        datetime.now(UTC)
         .isoformat(timespec="milliseconds")
         .replace("+00:00", "Z")
     )
