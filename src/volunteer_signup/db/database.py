@@ -2,6 +2,10 @@ import boto3
 from botocore.config import Config
 
 from volunteer_signup.config import ensure_settings
+from volunteer_signup.db.reads import ReadsMixin
+from volunteer_signup.db.seed import SeedMixin
+from volunteer_signup.db.tables import TablesMixin
+from volunteer_signup.db.writes import WritesMixin
 
 _BOTO_CONFIG = Config(
     connect_timeout=2,
@@ -10,7 +14,7 @@ _BOTO_CONFIG = Config(
 )
 
 
-class Database:
+class Database(TablesMixin, ReadsMixin, WritesMixin, SeedMixin):
     """Access to the Events, Roles, and Shifts tables."""
 
     def __init__(self, settings: dict[str, str]):
