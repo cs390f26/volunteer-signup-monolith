@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Create event</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="site-header">
+        <a class="brand" href="/">
+          Volunteers
+          <span class="brand-tag">Find a role. Pick a time. Show up.</span>
+        </a>
+        <div class="header-actions">
+          <a class="btn btn-primary" href="/">All events</a>
+        </div>
+      </header>
+
+      <div class="create-form">
+        <div class="create-box">
+          <h1 class="detail-title">Create an event</h1>
+          <p class="page-status" id="form-error" hidden></p>
+
+          <div class="field">
+            <label for="event-name">Event name</label>
+            <input
+              id="event-name"
+              name="name"
+              type="text"
+              value=""
+              maxlength="100"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="field">
+            <label for="event-description">Description</label>
+            <textarea
+              id="event-description"
+              name="description"
+              maxlength="280"
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label for="event-date">Date</label>
+            <input id="event-date" name="date" type="date" value="" />
+          </div>
+
+          <fieldset class="roles-fieldset">
+            <legend>Roles</legend>
+            <div id="roles-fields"></div>
+          </fieldset>
+
+          <div class="create-add">
+            <button
+              class="btn btn-primary btn-icon"
+              type="button"
+              id="add-role"
+              aria-label="Add role"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <div class="create-actions">
+          <a class="btn btn-primary" href="/">Cancel</a>
+          <button class="btn btn-primary" type="button" id="create-btn">
+            Create
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      const rolesFields = document.getElementById("roles-fields");
+      const addRoleBtn = document.getElementById("add-role");
+      const createBtn = document.getElementById("create-btn");
+      const formError = document.getElementById("form-error");
+      let roleCount = 0;
+
+      function showError(message) {
+        formError.hidden = false;
+        formError.textContent = message;
+      }
+
+      function clearError() {
+        formError.hidden = true;
+        formError.textContent = "";
+      }
+
+      function shiftTime(value) {
+        return value ? value.slice(0, 5) : "";
+      }
+
+      function refreshRoleControls() {
+        const cards = rolesFields.querySelectorAll(".role-card");
+        cards.forEach((card, index) => {
+          card.querySelector(".role-card-title").textContent =
+            "Role " + (index + 1);
+          const removeRole = card.querySelector("[data-remove-role]");
+          if (removeRole) removeRole.hidden = cards.length <= 1;
+          const shifts = card.querySelectorAll(".shift-row");
+          shifts.forEach((row) => {
+            const btn = row.querySelector("[data-remove-shift]");
+            if (btn) btn.hidden = shifts.length <= 1;
+          });
+          const addShift = card.querySelector("[data-add-shift]");
+          if (addShift) addShift.hidden = shifts.length >= 50;
+        });
+        addRoleBtn.hidden = cards.length >= 10;
+      }
+
+      function addShiftRow(card, focus) {
+        const slots = card.querySelector(".slots-fields");
+        if (slots.querySelectorAll(".shift-row").length >= 50) return;
+        const n = slots.querySelectorAll(".shift-row").length + 1;
+        const startId = card.dataset.roleId + "-shift-" + n + "-start";
+        const endId = card.dataset.roleId + "-shift-" + n + "-end";
+        const row = document.createElement("div");
+        row.className = "shift-row";
+        row.innerHTML =
+          '<div class="field">' +
+          '<label for="' +
+          startId +
+          '">Start</label>' +
+          '<input id="' +
+          startId +
+          '" name="shift-start" type="time" step="60" value="" />' +
+          "</div>" +
+          '<div class="field">' +
+          '<label for="' +
+          endId +
+          '">End</label>' +
+          '<input id="' +
+          endId +
+          '" name="shift-end" type="time" step="60" value="" />' +
+          "</div>" +
+          '<button class="btn btn-primary btn-icon" type="button" data-remove-shift aria-label="Remove shift">−</button>';
+        row.querySelector("[data-remove-shift]").addEventListener("click", () => {
+          if (slots.querySelectorAll(".shift-row").length <= 1) return;
+          row.remove();
+          refreshRoleControls();
+        });
+        slots.appendChild(row);
+        refreshRoleControls();
+        if (focus) row.querySelector("input").focus();
+      }
+
+      function addRoleCard(focus) {
+        if (rolesFields.querySelectorAll(".role-card").length >= 10) return;
+        roleCount += 1;
+        const roleId = "role-" + roleCount;
+        const card = document.createElement("div");
+        card.className = "role-card";
+        card.dataset.roleId = roleId;
+        const labelId = roleId + "-label";
+        card.innerHTML =
+          '<div class="role-card-head">' +
+          '<h2 class="role-card-title">Role</h2>' +
+          '<button class="btn btn-primary btn-icon" type="button" data-remove-role aria-label="Remove role">−</button>' +
+          "</div>" +
+          '<div class="field">' +
+          '<label for="' +
+          labelId +
+          '">Title</label>' +
+          '<input id="' +
+          labelId +
+          '" name="role-label" type="text" value="" maxlength="100" autocomplete="off" />' +
+          "</div>" +
+          '<fieldset class="slots-fieldset">' +
+          "<legend>Shifts</legend>" +
+          '<div class="slots-fields"></div>' +
+          "</fieldset>" +
+          '<div class="create-add">' +
+          '<button class="btn btn-primary btn-icon" type="button" data-add-shift aria-label="Add shift">+</button>' +
+          "</div>";
+        card.querySelector("[data-remove-role]").addEventListener("click", () => {
+          if (rolesFields.querySelectorAll(".role-card").length <= 1) return;
+          card.remove();
+          refreshRoleControls();
+        });
+        card.querySelector("[data-add-shift]").addEventListener("click", () => {
+          addShiftRow(card, true);
+        });
+        rolesFields.appendChild(card);
+        addShiftRow(card, false);
+        refreshRoleControls();
+        if (focus) card.querySelector('input[name="role-label"]').focus();
+      }
+
+      addRoleBtn.addEventListener("click", () => addRoleCard(true));
+      addRoleCard(false);
+
+      createBtn.addEventListener("click", async () => {
+        clearError();
+        const name = document.getElementById("event-name").value.trim();
+        const description = document
+          .getElementById("event-description")
+          .value.trim();
+        const date = document.getElementById("event-date").value.trim();
+
+        if (!name) {
+          showError("Enter an event name.");
+          return;
+        }
+        if (name.length > 100) {
+          showError("Event name must be at most 100 characters.");
+          return;
+        }
+        if (!description) {
+          showError("Enter a description.");
+          return;
+        }
+        if (description.length > 280) {
+          showError("Description must be at most 280 characters.");
+          return;
+        }
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          showError("Enter a valid date.");
+          return;
+        }
+
+        const roles = [];
+        for (const card of rolesFields.querySelectorAll(".role-card")) {
+          const label = card
+            .querySelector('input[name="role-label"]')
+            .value.trim();
+          if (!label) {
+            showError("Each role needs a title.");
+            return;
+          }
+          if (label.length > 100) {
+            showError("Each role title must be at most 100 characters.");
+            return;
+          }
+          const shifts = [];
+          for (const row of card.querySelectorAll(".shift-row")) {
+            const startTime = shiftTime(
+              row.querySelector('input[name="shift-start"]').value
+            );
+            const endTime = shiftTime(
+              row.querySelector('input[name="shift-end"]').value
+            );
+            if (!startTime || !endTime) {
+              showError("Each shift needs a start and end time.");
+              return;
+            }
+            if (startTime >= endTime) {
+              showError("Each shift's start must be earlier than its end.");
+              return;
+            }
+            shifts.push({ startTime, endTime });
+          }
+          if (shifts.length < 1 || shifts.length > 50) {
+            showError("Each role must have between 1 and 50 shifts.");
+            return;
+          }
+          roles.push({ label, shifts });
+        }
+
+        if (roles.length < 1 || roles.length > 10) {
+          showError("Provide between 1 and 10 roles.");
+          return;
+        }
+        const labels = roles.map((role) => role.label);
+        if (new Set(labels).size !== labels.length) {
+          showError("Role titles must be distinct.");
+          return;
+        }
+
+        const response = await fetch("/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, description, date, roles }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          showError(
+            (data.error && data.error.message) || "Could not create the event."
+          );
+          return;
+        }
+        window.location.href = "/";
+      });
+    </script>
+  </body>
+</html>
