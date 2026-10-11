@@ -4,12 +4,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Events</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Source+Sans+3:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
@@ -45,11 +39,9 @@
       }
 
       function roleCount(role) {
-        if (typeof role.totalShifts === "number") {
-          const taken = role.totalShifts - role.openShifts;
-          return taken + " taken · " + role.openShifts + " left";
-        }
-        return role.openShifts === 1 ? "1 left" : role.openShifts + " left";
+        return role.openShifts === 1
+          ? "1 open"
+          : role.openShifts + " open";
       }
 
       async function loadEvents() {

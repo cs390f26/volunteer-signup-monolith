@@ -13,8 +13,8 @@
   --occupied-line: #b8bcc0;
   --radius: 10px;
   --shadow: 0 1px 2px rgb(26 32 36 / 6%), 0 8px 24px rgb(26 32 36 / 6%);
-  --font-display: "Fraunces", Georgia, serif;
-  --font-body: "Source Sans 3", "Segoe UI", sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
+  --font-body: system-ui, "Segoe UI", sans-serif;
 }
 
 *,
@@ -269,6 +269,8 @@ a:focus-visible {
 }
 
 .create-form input[type="text"],
+.create-form input[type="date"],
+.create-form input[type="time"],
 .create-form textarea {
   width: 100%;
   padding: 0.65rem 0.85rem;
@@ -287,6 +289,8 @@ a:focus-visible {
 }
 
 .create-form input[type="text"]:focus,
+.create-form input[type="date"]:focus,
+.create-form input[type="time"]:focus,
 .create-form textarea:focus {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
@@ -357,6 +361,18 @@ a:focus-visible {
   font-size: 0.9rem;
 }
 
+.shift-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.5rem;
+  align-items: end;
+  margin-bottom: 0.85rem;
+}
+
+.shift-row .field {
+  margin-bottom: 0;
+}
+
 .field-with-action {
   position: relative;
 }
@@ -411,5 +427,9 @@ a:focus-visible {
   .site-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .shift-row {
+    grid-template-columns: 1fr;
   }
 }
