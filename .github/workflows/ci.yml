@@ -24,7 +24,7 @@ jobs:
           pip install -e .
 
       - name: Run tests
-        run: pytest
+        run: pytest tests
 
       - name: Run Ruff
         run: ruff check src tests scripts
