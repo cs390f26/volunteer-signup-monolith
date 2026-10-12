@@ -84,6 +84,20 @@ def test_ping_reflects_table_availability(db):
     assert db.ping() is False
 
 
+@pytest.mark.parametrize(
+    "table_attribute",
+    ["roles", "shifts"],
+)
+def test_ping_is_false_when_required_table_is_missing(
+    db,
+    table_attribute,
+):
+    table = getattr(db, table_attribute)
+    table.delete()
+
+    assert db.ping() is False
+
+
 def test_ping_is_false_when_endpoint_is_unreachable(db, monkeypatch):
     def unreachable(**kwargs):
         raise EndpointConnectionError(endpoint_url="http://localhost:8000")
@@ -219,12 +233,34 @@ def test_create_event_stores_event_roles_and_shifts(db):
 
     assert db.get_event("new00001") == make_event()
     assert db.list_roles("new00001") == [
-        {"eventId": "new00001", "roleId": "01", "label": "Setup", "shiftCount": 1, "remainingShifts": 1},
-        {"eventId": "new00001", "roleId": "02", "label": "Cleanup", "shiftCount": 2, "remainingShifts": 2},
+        {
+            "eventId": "new00001",
+            "roleId": "01",
+            "label": "Setup",
+            "shiftCount": 1,
+            "remainingShifts": 1,
+        },
+        {
+            "eventId": "new00001",
+            "roleId": "02",
+            "label": "Cleanup",
+            "shiftCount": 2,
+            "remainingShifts": 2,
+        },
     ]
     assert db.list_shifts("new00001", 2) == [
-        {"roleKey": "new00001#02", "shiftNumber": 1, "startTime": "13:00", "endTime": "14:30"},
-        {"roleKey": "new00001#02", "shiftNumber": 2, "startTime": "14:30", "endTime": "16:00"},
+        {
+            "roleKey": "new00001#02",
+            "shiftNumber": 1,
+            "startTime": "13:00",
+            "endTime": "14:30",
+        },
+        {
+            "roleKey": "new00001#02",
+            "shiftNumber": 2,
+            "startTime": "14:30",
+            "endTime": "16:00",
+        },
     ]
 
 
@@ -241,12 +277,21 @@ def test_create_event_rejects_existing_id_without_touching_it(seeded_db):
         seeded_db.create_event(make_event("k7m2xq9p"), make_roles())
 
     assert seeded_db.get_event("k7m2xq9p")["name"] == "Heritage Day"
-    assert [r["label"] for r in seeded_db.list_roles("k7m2xq9p")] == ["Trash pickup", "Greeter"]
+    assert [r["label"] for r in seeded_db.list_roles("k7m2xq9p")] == [
+        "Trash pickup",
+        "Greeter",
+    ]
 
 
 def test_create_event_rejects_id_used_by_leftover_roles(db):
     db.roles.put_item(
-        Item={"eventId": "orphan01", "roleId": "01", "label": "Left", "shiftCount": 1, "remainingShifts": 1}
+        Item={
+            "eventId": "orphan01",
+            "roleId": "01",
+            "label": "Left",
+            "shiftCount": 1,
+            "remainingShifts": 1,
+        }
     )
 
     with pytest.raises(EventIdTakenError):
@@ -307,7 +352,9 @@ def test_sign_up_for_missing_shift_creates_nothing(seeded_db):
     ("event_id", "role_number"),
     [("k7m2xq9p", 9), ("zzzzzzzz", 1)],
 )
-def test_sign_up_for_missing_role_or_event_is_not_found(seeded_db, event_id, role_number):
+def test_sign_up_for_missing_role_or_event_is_not_found(
+    seeded_db, event_id, role_number
+):
     with pytest.raises(NotFoundError):
         seeded_db.sign_up(event_id, role_number, 1, "Sam", SIGNED_UP_AT)
 

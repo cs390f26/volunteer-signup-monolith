@@ -11,8 +11,7 @@ signups_bp = Blueprint("signups", __name__)
 
 
 @signups_bp.post(
-    "/events/<event_id>/roles/<int:role_number>/shifts/"
-    "<int:shift_number>/signup"
+    "/events/<event_id>/roles/<int:role_number>/shifts/<int:shift_number>/signup"
 )
 def signup_for_shift(event_id, role_number, shift_number):
     service = current_app.extensions["volunteer_signup_service"]
@@ -30,24 +29,14 @@ def signup_for_shift(event_id, role_number, shift_number):
 
     volunteer_name = signup_data.get("name")
 
-    if not isinstance(volunteer_name, str) or not volunteer_name.strip():
-        return jsonify(
-            {
-                "error": {
-                    "code": "BAD_REQUEST",
-                    "message": "Volunteer name is required",
-                }
-            }
-        ), 400
-    
     try:
         shift = service.signup_for_shift(
             event_id,
             role_number,
             shift_number,
-            volunteer_name.strip(),
+            volunteer_name,
         )
-        
+
     except NotFoundError:
         return jsonify(
             {

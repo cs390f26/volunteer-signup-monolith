@@ -41,9 +41,11 @@ paths:
                         roles:
                           - number: 1
                             label: Registration
+                            totalShifts: 2
                             openShifts: 2
                           - number: 2
                             label: Cleanup Crew
+                            totalShifts: 3
                             openShifts: 3
                 empty:
                   summary: No events
@@ -427,6 +429,7 @@ components:
       required:
         - number
         - label
+        - totalShifts
         - openShifts
       properties:
         number:
@@ -437,6 +440,11 @@ components:
         label:
           type: string
           description: Role label
+        totalShifts:
+          type: integer
+          minimum: 1
+          maximum: 50
+          description: Total number of shifts for the role
         openShifts:
           type: integer
           minimum: 0

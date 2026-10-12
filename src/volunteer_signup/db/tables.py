@@ -74,9 +74,15 @@ class TablesMixin:
                 waiter.wait(TableName=name)
 
     def ping(self) -> bool:
-        """Return whether the database is reachable and the Events table exists."""
+        """Return whether all required database tables are reachable."""
         try:
-            self.client.describe_table(TableName=self.events.name)
+            for table in (
+                self.events,
+                self.roles,
+                self.shifts,
+            ):
+                self.client.describe_table(TableName=table.name)
         except (ClientError, BotoCoreError):
             return False
+
         return True

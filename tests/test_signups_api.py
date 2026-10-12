@@ -42,13 +42,12 @@ def test_signup_for_shift_records_volunteer():
         "volunteerName": "Alex Morgan",
     }
 
+
 def test_signup_for_shift_requires_json_body():
     app = create_app(service=FakeSignupService())
     client = app.test_client()
 
-    response = client.post(
-        "/events/evt12345/roles/1/shifts/1/signup"
-    )
+    response = client.post("/events/evt12345/roles/1/shifts/1/signup")
 
     assert response.status_code == 400
     assert response.get_json() == {
@@ -58,8 +57,9 @@ def test_signup_for_shift_requires_json_body():
         }
     }
 
+
 def test_signup_for_shift_requires_volunteer_name():
-    app = create_app(service=FakeSignupService())
+    app = create_app(service=InvalidSignupService())
     client = app.test_client()
 
     response = client.post(
@@ -71,9 +71,10 @@ def test_signup_for_shift_requires_volunteer_name():
     assert response.get_json() == {
         "error": {
             "code": "BAD_REQUEST",
-            "message": "Volunteer name is required",
+            "message": "name must contain between 1 and 100 characters",
         }
     }
+
 
 class MissingShiftService:
     def signup_for_shift(
@@ -103,6 +104,7 @@ def test_signup_for_shift_returns_not_found_for_unknown_shift():
         }
     }
 
+
 class TakenShiftService:
     def signup_for_shift(
         self,
@@ -130,6 +132,7 @@ def test_signup_for_shift_returns_conflict_when_shift_is_taken():
             "message": "Shift is no longer available",
         }
     }
+
 
 class FailingSignupService:
     def signup_for_shift(
@@ -159,6 +162,7 @@ def test_signup_for_shift_returns_internal_error_when_service_fails():
         }
     }
 
+
 class InvalidSignupService:
     def signup_for_shift(
         self,
@@ -167,7 +171,7 @@ class InvalidSignupService:
         shift_number,
         volunteer_name,
     ):
-        raise ValidationError("name must be between 1 and 100 characters")
+        raise ValidationError("name must contain between 1 and 100 characters")
 
 
 def test_signup_for_shift_returns_bad_request_for_invalid_name():
@@ -183,6 +187,6 @@ def test_signup_for_shift_returns_bad_request_for_invalid_name():
     assert response.get_json() == {
         "error": {
             "code": "BAD_REQUEST",
-            "message": "name must be between 1 and 100 characters",
+            "message": "name must contain between 1 and 100 characters",
         }
     }
