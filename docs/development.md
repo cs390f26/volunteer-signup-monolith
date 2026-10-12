@@ -57,8 +57,14 @@ On macOS, AirPlay Receiver also listens on port 5000, so `http://localhost:5000`
 ## Tests
 
 ```bash
-pytest
+pytest tests
 ruff check src tests scripts
+```
+
+Playwright UI tests live in `tests_ui/` and need DynamoDB Local plus the app:
+
+```bash
+pytest tests_ui
 ```
 
 Tests use moto instead of DynamoDB Local, so they need no running database. `tests/conftest.py` provides two fixtures:

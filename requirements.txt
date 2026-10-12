@@ -3,6 +3,7 @@ flask
 gunicorn
 moto[dynamodb]
 pytest
+pytest-playwright
 python-dotenv
 ruff
 setuptools
