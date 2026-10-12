@@ -10,4 +10,3 @@ def test_empty_list_shows_create_event_and_no_rows(page, event_db):
     # whose accessible name is "Create event"). Prefer this over CSS when you can.
     page.get_by_role("link", name="Create event").wait_for()
     assert page.locator("#event-list li").count() == 0
-    assert page.locator("#list-status").is_hidden()

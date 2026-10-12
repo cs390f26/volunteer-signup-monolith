@@ -7,17 +7,60 @@ base_url for pytest-playwright, and provides data fixtures via Database.
 
 import urllib.error
 import urllib.request
-from pathlib import Path
 
 import pytest
 
-from tests_ui.sample_events import FOOD_DRIVE_ID, HERITAGE_DAY_ID
-from volunteer_signup.config import ensure_settings
-from volunteer_signup.db import Database, read_seed_file
+from volunteer_signup.db import Database
 
 # Same host/port as python -m volunteer_signup.app (app.run(port=5000)).
 BASE_URL = "http://127.0.0.1:5000"
-SAMPLE_DATA = Path(__file__).resolve().parent.parent / "specs" / "sample-data.json"
+
+FOOD_DRIVE = {
+    "event": {
+        "eventId": "m3n8kp2w",
+        "createdAt": "2026-09-20T10:00:00.000Z",
+        "name": "Food Drive Sorting",
+        "description": "Sort and box donations at the campus food pantry.",
+        "date": "2026-10-10",
+    },
+    "roles": [
+        {
+            "label": "Sorting",
+            "shifts": [
+                {"startTime": "09:00", "endTime": "11:00"},
+                {"startTime": "11:00", "endTime": "13:00"},
+            ],
+        },
+        {
+            "label": "Loading",
+            "shifts": [
+                {"startTime": "13:00", "endTime": "14:30"},
+                {"startTime": "14:30", "endTime": "16:00"},
+            ],
+        },
+    ],
+}
+
+HERITAGE_DAY = {
+    "event": {
+        "eventId": "k7m2xq9p",
+        "createdAt": "2026-09-18T14:05:00.000Z",
+        "name": "Heritage Day",
+        "description": "Heritage Day is a celebration of Moravian tradition, community, and service.",
+        "date": "2026-09-24",
+    },
+    "roles": [
+        {
+            "label": "Trash pickup",
+            "shifts": [
+                {"startTime": "08:00", "endTime": "10:00"},
+                {"startTime": "10:00", "endTime": "12:00"},
+                {"startTime": "12:00", "endTime": "14:00"},
+                {"startTime": "14:00", "endTime": "16:00"},
+            ],
+        },
+    ],
+}
 
 
 def pytest_sessionstart(session):
@@ -43,7 +86,6 @@ def pytest_sessionstart(session):
 
 
 def _clear_tables(database: Database) -> None:
-    """Remove every item so each test starts from a known empty store."""
     tables = (
         (database.events, ("eventId",)),
         (database.roles, ("eventId", "roleId")),
@@ -69,62 +111,29 @@ def base_url():
 @pytest.fixture
 def event_db():
     """Empty Database connected with ensure_settings (for arranging data)."""
-    ensure_settings()
     database = Database.from_env()
     _clear_tables(database)
     return database
 
 
 @pytest.fixture
-def sample_events(event_db):
-    """Sample events from specs/sample-data.json in an otherwise empty store."""
-    event_db.load_items(read_seed_file(SAMPLE_DATA))
-    return read_seed_file(SAMPLE_DATA)
+def food_drive(event_db):
+    """One sample event with open shifts."""
+    event_db.create_event(FOOD_DRIVE["event"], FOOD_DRIVE["roles"])
+    return FOOD_DRIVE["event"]
 
 
 @pytest.fixture
-def heritage_day(sample_events):
-    """Heritage Day, which has both open and taken shifts."""
-    return next(
-        event
-        for event in sample_events["events"]
-        if event["eventId"] == HERITAGE_DAY_ID
-    )
-
-
-@pytest.fixture
-def food_drive(sample_events):
-    """Food Drive Sorting, the newest sample event."""
-    return next(
-        event
-        for event in sample_events["events"]
-        if event["eventId"] == FOOD_DRIVE_ID
-    )
+def heritage_day(event_db):
+    """One sample event with an open shift and a taken shift."""
+    event_db.create_event(HERITAGE_DAY["event"], HERITAGE_DAY["roles"])
+    event_db.sign_up("k7m2xq9p", 1, 1, "Jack", "2026-09-19T16:20:00.000Z")
+    return HERITAGE_DAY["event"]
 
 
 @pytest.fixture
 def two_events_newest_first(event_db):
-    """Two events for browse-order checks; the second create is the newer one."""
-    older = {
-        "eventId": "olderev1",
-        "createdAt": "2026-09-01T10:00:00.000Z",
-        "name": "Older Cleanup",
-        "description": "The earlier event.",
-        "date": "2026-09-15",
-    }
-    newer = {
-        "eventId": "newerev1",
-        "createdAt": "2026-09-20T10:00:00.000Z",
-        "name": "Newer Cleanup",
-        "description": "The later event.",
-        "date": "2026-10-01",
-    }
-    roles = [
-        {
-            "label": "Helper",
-            "shifts": [{"startTime": "09:00", "endTime": "10:00"}],
-        }
-    ]
-    event_db.create_event(older, roles)
-    event_db.create_event(newer, roles)
-    return (newer, older)
+    """Heritage Day (older) then Food Drive (newer) for browse-order checks."""
+    event_db.create_event(HERITAGE_DAY["event"], HERITAGE_DAY["roles"])
+    event_db.create_event(FOOD_DRIVE["event"], FOOD_DRIVE["roles"])
+    return (FOOD_DRIVE["event"], HERITAGE_DAY["event"])
