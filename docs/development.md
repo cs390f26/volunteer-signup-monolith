@@ -12,6 +12,18 @@ cp config/example.env .env
 
 The values in `config/example.env` point at DynamoDB Local on `http://localhost:8000` with dummy credentials. DynamoDB Local accepts any credentials.
 
+## Running everything with one command
+
+With Docker running:
+
+```bash
+scripts/run_local.sh
+```
+
+It creates `.env` if it is missing, starts DynamoDB Local in Docker (or reuses one already on port 8000), creates the tables, and runs the app on [http://127.0.0.1:5000](http://127.0.0.1:5000). Ctrl+C stops the app and the DynamoDB Local container it started. To load the sample data, run `python scripts/seed.py` in another terminal.
+
+The sections below do the same steps by hand.
+
 ## DynamoDB Local
 
 Start DynamoDB Local bound to `127.0.0.1` only, so it is not reachable from other machines. Data is kept in `db/` at the repository root, which is gitignored.
