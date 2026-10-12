@@ -32,10 +32,10 @@ Run the tests:
 pytest
 ```
 
-Start the application:
+Start DynamoDB Local, create the tables, and run the application (requires Docker):
 
 ```bash
-python -m volunteer_signup.app
+scripts/run_local.sh
 ```
 
 Open [http://127.0.0.1:5000/health](http://127.0.0.1:5000/health) to verify that the application is running.
