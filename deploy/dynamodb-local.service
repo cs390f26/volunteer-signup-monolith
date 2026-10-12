@@ -1,0 +1,17 @@
+[Unit]
+Description=DynamoDB Local for the Volunteer Signup app
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ec2-user
+Group=ec2-user
+# The data file (shared-local-instance.db) is written next to the JAR.
+WorkingDirectory=/home/ec2-user/volunteer-signup-monolith/db
+ExecStart=/usr/bin/java --enable-native-access=ALL-UNNAMED -jar DynamoDBLocal.jar -sharedDb -port 8000
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,6 +1,5 @@
 from setuptools import find_packages, setup
 
-
 setup(
     name="volunteer-signup",
     package_dir={"": "src"},
